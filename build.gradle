@@ -1,0 +1,19 @@
+apply plugin: 'java'
+
+sourceCompatibility = 1.5
+version = '1.0'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+
+    compile 'io.undertow:undertow-core:1.0.15.Final'
+    compile 'com.netflix.zuul:zuul-core:1.0.0'
+    compile 'io.undertow:undertow-servlet:1.0.15.Final'
+    compile 'org.slf4j:slf4j-api:1.7.7'
+    compile 'ch.qos.logback:logback-classic:1.1.2'
+
+    compile group: 'junit', name: 'junit', version: '4.11'
+}

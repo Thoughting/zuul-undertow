@@ -1,0 +1,22 @@
+# Intellij Idea project files
+.idea
+*.iml
+*.ipr
+*.iws
+
+# gradle config
+.gradle
+
+# project binaries
+build
+out
+
+# sonar
+sonar-project.properties
+
+#logs
+*.log
+*.log.gz
+
+# mac os x
+.DS_Store
