@@ -147,15 +147,17 @@ class Routing extends ZuulFilter {
     }
 
     Object run() {
-        HttpServletRequest request = RequestContext.currentContext.getRequest();
+        RequestContext context =  RequestContext.currentContext
+        HttpServletRequest request = context.getRequest()
+
         Header[] headers = buildZuulRequestHeaders(request)
         String verb = getVerb(request);
         InputStream requestEntity = getRequestBody(request)
         HttpClient httpclient = CLIENT.get()
 
         String uri = request.getRequestURI()
-        if (RequestContext.currentContext.requestURI != null) {
-            uri = RequestContext.currentContext.requestURI
+        if (context.requestURI != null) {
+            uri = context.requestURI
         }
 
         try {
@@ -165,6 +167,33 @@ class Routing extends ZuulFilter {
             throw e;
         }
         return null
+    }
+
+    def Header[] buildZuulRequestHeaders(HttpServletRequest request) {
+
+        def headers = new ArrayList()
+        Enumeration headerNames = request.getHeaderNames();
+        while (headerNames.hasMoreElements()) {
+            String name = (String) headerNames.nextElement();
+            String value = request.getHeader(name);
+            if (isValidHeader(name)) headers.add(new BasicHeader(name, value))
+        }
+
+        Map zuulRequestHeaders = RequestContext.getCurrentContext().getZuulRequestHeaders();
+
+        zuulRequestHeaders.keySet().each {
+            String name = it.toLowerCase()
+            BasicHeader h = headers.find { BasicHeader he -> he.name == name }
+            if (h != null) {
+                headers.remove(h)
+            }
+            headers.add(new BasicHeader((String) it, (String) zuulRequestHeaders[it]))
+        }
+
+        if (RequestContext.currentContext.responseGZipped) {
+            headers.add(new BasicHeader("accept-encoding", "deflate, gzip"))
+        }
+        return headers
     }
 
     def InputStream debug(HttpClient httpclient, String verb, String uri, HttpServletRequest request, Header[] headers, InputStream requestEntity) {
@@ -270,34 +299,6 @@ class Routing extends ZuulFilter {
         }
         return true;
     }
-
-    def Header[] buildZuulRequestHeaders(HttpServletRequest request) {
-
-        def headers = new ArrayList()
-        Enumeration headerNames = request.getHeaderNames();
-        while (headerNames.hasMoreElements()) {
-            String name = (String) headerNames.nextElement();
-            String value = request.getHeader(name);
-            if (isValidHeader(name)) headers.add(new BasicHeader(name, value))
-        }
-
-        Map zuulRequestHeaders = RequestContext.getCurrentContext().getZuulRequestHeaders();
-
-        zuulRequestHeaders.keySet().each {
-            String name = it.toLowerCase()
-            BasicHeader h = headers.find { BasicHeader he -> he.name == name }
-            if (h != null) {
-                headers.remove(h)
-            }
-            headers.add(new BasicHeader((String) it, (String) zuulRequestHeaders[it]))
-        }
-
-        if (RequestContext.currentContext.responseGZipped) {
-            headers.add(new BasicHeader("accept-encoding", "deflate, gzip"))
-        }
-        return headers
-    }
-
 
 
     String getVerb(HttpServletRequest request) {

@@ -15,8 +15,6 @@ import java.util.zip.GZIPInputStream
 
 
 class PostRequest extends ZuulFilter {
-    static DynamicBooleanProperty INCLUDE_DEBUG_HEADER =
-            DynamicPropertyFactory.getInstance().getBooleanProperty(ZuulConstants.ZUUL_INCLUDE_DEBUG_HEADER, false);
 
     static DynamicIntProperty INITIAL_STREAM_BUFFER_SIZE =
             DynamicPropertyFactory.getInstance().getIntProperty(ZuulConstants.ZUUL_INITIAL_STREAM_BUFFER_SIZE, 1024);
@@ -127,41 +125,16 @@ class PostRequest extends ZuulFilter {
         RequestContext context = RequestContext.getCurrentContext();
         HttpServletResponse servletResponse = context.getResponse();
         List<Pair<String, String>> zuulResponseHeaders = context.getZuulResponseHeaders();
-        String debugHeader = ""
 
-        List<String> rd
-
-        rd = (List<String>) RequestContext.getCurrentContext().get("routingDebug");
-        rd?.each {
-            debugHeader += "[[[${it}]]]";
+        zuulResponseHeaders?.each { Pair<String, String> it ->
+            servletResponse.addHeader(it.first(), it.second())
         }
 
-        /*
-        rd = (List<String>) RequestContext.getCurrentContext().get("requestDebug");
-        rd?.each {
-            debugHeader += "[[[REQUEST_DEBUG::${it}]]]";
-        }
-        */
-
-        if (INCLUDE_DEBUG_HEADER.get()) servletResponse.addHeader("X-Zuul-Debug-Header", debugHeader)
-
-        if (Debug.debugRequest()) {
-            zuulResponseHeaders?.each { Pair<String, String> it ->
-                servletResponse.addHeader(it.first(), it.second())
-                Debug.addRequestDebug("OUTBOUND: <  " + it.first() + ":" + it.second())
-            }
-        } else {
-            zuulResponseHeaders?.each { Pair<String, String> it ->
-                servletResponse.addHeader(it.first(), it.second())
-            }
-        }
-
-        RequestContext ctx = RequestContext.getCurrentContext()
-        Integer contentLength = ctx.getOriginContentLength()
+        Integer contentLength = context.getOriginContentLength()
 
         // only inserts Content-Length if origin provides it and origin response is not gzipped
         if (SET_CONTENT_LENGTH.get()) {
-            if (contentLength != null && !ctx.getResponseGZipped())
+            if (contentLength != null && !context.getResponseGZipped())
                 servletResponse.setContentLength(contentLength)
         }
     }
