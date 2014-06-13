@@ -6,12 +6,9 @@ import com.netflix.zuul.context.ContextLifecycleFilter;
 import com.netflix.zuul.groovy.GroovyCompiler;
 import com.netflix.zuul.groovy.GroovyFileFilter;
 import com.netflix.zuul.http.ZuulServlet;
-import com.netflix.zuul.monitoring.CounterFactory;
 import com.netflix.zuul.monitoring.MonitoringHelper;
-import io.undertow.Handlers;
 import io.undertow.Undertow;
 import io.undertow.server.HttpHandler;
-import io.undertow.server.handlers.PathHandler;
 import io.undertow.servlet.Servlets;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.DeploymentManager;
@@ -41,7 +38,7 @@ public class Main {
 
         try {
             FilterFileManager.setFilenameFilter(new GroovyFileFilter());
-            FilterFileManager.init(5, "src/main/groovy/filters/pre");
+            FilterFileManager.init(5, "src/main/groovy/filters/pre", "src/main/groovy/filters/route", "src/main/groovy/filters/post");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
