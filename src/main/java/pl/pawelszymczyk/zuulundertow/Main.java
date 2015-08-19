@@ -1,4 +1,4 @@
-package pl.allegro.zuul;
+package pl.pawelszymczyk.zuulundertow;
 
 import com.netflix.zuul.FilterFileManager;
 import com.netflix.zuul.FilterLoader;
